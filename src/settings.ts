@@ -21,7 +21,10 @@ export class SampleSettingTab extends PluginSettingTab {
 			.addText(text => text
 				.setPlaceholder('Enter your Hardcover API Key')
 				.setValue(this.plugin.settings.authBearer)
-				.onChange(async (value) => {
+				.onChange(async (value: string) => {
+					if (!value.startsWith("Bearer ")){
+						value = "Bearer "+value;
+					}
 					this.plugin.settings.authBearer = value;
 					await this.plugin.saveSettings();
                     this.plugin.setClient()

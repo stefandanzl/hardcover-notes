@@ -16,7 +16,7 @@ export async function launcher(plugin: MyPlugin){
             return
         }
 
-
+		this.setClient(plugin)
         
 
 

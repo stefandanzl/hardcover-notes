@@ -20,5 +20,6 @@
   },
   "include": [
     "**/*.ts"
-  ]
+, "tests/query.test.ts"  ],
+"exclude": ["**/exclude/**"]
 }

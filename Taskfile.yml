@@ -13,3 +13,6 @@ tasks:
   build:
     cmds:
       - npm run build
+  test:
+    cmds:
+      - jest

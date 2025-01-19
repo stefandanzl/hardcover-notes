@@ -4,13 +4,15 @@ import { SampleSettingTab } from 'settings';
 import { DEFAULT_SETTINGS, MyPluginSettings } from 'const';
 import { launcher } from 'startup';
 import { GraphQLClient } from 'graphql-request'
+import { Client } from 'query';
+import {write } from "./writer"
 
 
 
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
-	client: GraphQLClient;
+	client: Client;
 
 	async onload() {
 		await launcher(this)
@@ -30,10 +32,15 @@ export default class MyPlugin extends Plugin {
 
 
 	setClient(){
-		this.client = new GraphQLClient(this.settings.apiUrl, {
-			headers: {
-				authorization: this.settings.authBearer
-			}
-		})
+		this.client = new Client(this)
+	}
+
+	async worker(){
+		
+		const response = await this.client.fetchUserBooks()
+
+		write(books)
+
+		this.app.vault.adapter.write("Hardcover/","")
 	}
 }
