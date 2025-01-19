@@ -1,27 +1,30 @@
-import { Book, User } from "const";
-import * as Mustache  from "mustache"
+import { Book, NewBook, User } from "const";
+
+// import * as Mustache  from "mustache"
+const he = require('he');
 
 // Function to parse and process the data
 export function processUserBooks(data: { me: User[] }) {
 
     const user = data.me[0];
-    const processedBooks = user.user_books.map(userBook => ({
-        title: userBook.book.title,
-        filename: sanitizeTitle(userBook.book.title),
+    const processedBooks = user.user_books.map(userBook  => ({
         author: userBook.book.contributions[0].author.name,
-        readDate: {
-            start: userBook.user_book_reads[0].started_at,
-            end: userBook.user_book_reads[0].finished_at
-        },
-        cover: userBook.book.image.url,
-        description: userBook.book.description,
-        status: userBook.user_book_status.status,
+        bookStatus: userBook.user_book_status.status,
+        bookStatusId: userBook.user_book_status.id,
+        dateFinished: userBook.user_book_reads[0].finished_at,
+        dateStarted: userBook.user_book_reads[0].started_at,
+        description: he.decode(userBook.book.description),
+        filename: sanitizeTitle(he.decode(userBook.book.title)),
+        imageUrl: userBook.book.image.url,
+        releaseYear: userBook.book.release_year,
+        subtitle: he.decode(userBook.book.subtitle),
+        title: he.decode(userBook.book.title),
     }));
 
-    return {
-        username: user.username,
-        books: processedBooks as unknown as Book[],
-    };
+    console.log(processedBooks)
+
+    return  processedBooks
+    
 
 }
 
@@ -39,3 +42,8 @@ export function sanitizeTitle(title: string): string {
 }
 
 
+export function log(text: string | string[] | any | any[]) {
+    if (true) {
+        console.log(text);
+    }
+}

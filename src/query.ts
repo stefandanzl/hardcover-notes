@@ -4,6 +4,7 @@ import { User } from 'const';
 import { processUserBooks } from './util';
 
 
+
 export class Client extends GraphQLClient{
     plugin: MyPlugin
 

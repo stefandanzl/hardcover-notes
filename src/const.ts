@@ -1,49 +1,49 @@
-export interface Book {
+export interface NewBook {
+    author: string;
     bookStatus: string;
     bookStatusId: number;
+    dateFinished: string;
+    dateStarted: string;
+    description: string;
+    filename: string;
+    imageUrl: string;
     releaseYear: number;
-    author: string;
-    imageurl: string;
+    subtitle: string;
+    title: string;
+    }
+
+export type BookKey = keyof NewBook;
+
+
+export interface Author {
+    name: string;
+}
+
+export interface Contribution {
+    author: Author;
+}
+
+export interface Image {
+    url: string;
+}
+
+export interface Book {
+    id: number;
     title: string;
     subtitle: string;
     filename: string;
+    release_year: number;
     description: string;
-    dateStarted: string;
-    dateFinished: string;
-    }
+    alternative_titles: string[];
+    contributions: Contribution[];
+    image: Image;
+}
 
-
-
-
-// export interface Author {
-//     name: string;
-// }
-
-// export interface Contribution {
-//     author: Author;
-// }
-
-// export interface Image {
-//     url: string;
-// }
-
-// export interface Book {
-//     id: number;
-//     title: string;
-//     subtitle: string;
-//     filename: string;
-//     release_year: number;
-//     description: string;
-//     alternative_titles: string[];
-//     contributions: Contribution[];
-//     image: Image;
-// }
-
-// export interface BookRead {
-//     started_at: string;
-//     paused_at: string | null;
-//     finished_at: string;
-// }
+export interface BookRead {
+    started_at: string;
+    paused_at: string | null;
+    finished_at: string;
+}
 
 export interface BookStatus {
     status: string;
@@ -78,7 +78,7 @@ export interface MyPluginSettings {
     apiUrl: string;
     directory: string;
     templateContent: string;
-    properties: string[];
+    properties: (keyof NewBook)[];
 }
 
 
@@ -88,5 +88,5 @@ export const DEFAULT_SETTINGS: MyPluginSettings = {
     apiUrl: 'https://hardcover-hasura-production-1136269bb9de.herokuapp.com/v1/graphql',
     directory: 'Hardcover',
     templateContent: DEFAULT_TEMPLATE,
-    properties: [],
+    properties: ['title', 'author', 'dateFinished'],
 }
