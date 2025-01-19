@@ -2,15 +2,18 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Set
 import { SampleSettingTab } from 'settings';
 // Remember to rename these classes and interfaces!
 import { DEFAULT_SETTINGS, MyPluginSettings } from 'const';
-
+import { launcher } from 'startup';
+import { GraphQLClient } from 'graphql-request'
 
 
 
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
+	client: GraphQLClient;
 
 	async onload() {
+		await launcher(this)
 	}
 
 	onunload() {
@@ -23,5 +26,14 @@ export default class MyPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+
+	setClient(){
+		this.client = new GraphQLClient(this.settings.apiUrl, {
+			headers: {
+				authorization: this.settings.authBearer
+			}
+		})
 	}
 }

@@ -16,14 +16,15 @@ export class SampleSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Setting #1')
+			.setName('Auth Bearer')
 			.setDesc('It\'s a secret')
 			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+				.setPlaceholder('Enter your Hardcover API Key')
+				.setValue(this.plugin.settings.authBearer)
 				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.authBearer = value;
 					await this.plugin.saveSettings();
+                    this.plugin.setClient()
 				}));
 	}
 }

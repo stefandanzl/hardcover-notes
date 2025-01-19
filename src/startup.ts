@@ -1,10 +1,24 @@
 import { Notice , Editor, MarkdownEditView, MarkdownView, } from "obsidian";
 import { SampleSettingTab } from "settings";
 import { SampleModal } from "modal";
+import MyPlugin from "main";
+import { GraphQLClient } from 'graphql-request'
 
-export async function launcher(){
+
+
+
+export async function launcher(plugin: MyPlugin){
     
-		await this.loadSettings();
+		await plugin.loadSettings();
+
+        if (plugin.settings.authBearer === ''){
+            console.error("API KEY not set")
+            return
+        }
+
+
+        
+
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
