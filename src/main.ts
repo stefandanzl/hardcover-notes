@@ -32,18 +32,16 @@ import { Client } from "query";
 import { Book } from "const";
 import { resolve } from "path";
 import * as path from "path";
-import { Render } from "render";
 // import * as Mustache from "mustache";
 import { log } from "./util";
-const Mustache = require('mustache');
+const Mustache = require("mustache");
+const he = require("he");
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
 	client: Client;
-	render: Render;
 
 	async onload() {
-		this.render = new Render(this);
 		await launcher(this);
 	}
 
@@ -65,12 +63,9 @@ export default class MyPlugin extends Plugin {
 		this.client = new Client(this);
 	}
 
-
-
 	async fileWriter() {
-		log("GEths");
 		const response: NewBook[] = await this.client.fetchUserBooks();
-		log("ned")
+
 		//chceck if directory exists if not create it but with try catch
 		if (!(await this.app.vault.adapter.exists(this.settings.directory))) {
 			try {
@@ -79,20 +74,23 @@ export default class MyPlugin extends Plugin {
 				console.error("Failed creating the directory!");
 			}
 		}
-		log("AAAA")
 
 		// const properties: (keyof NewBook)[] = this.settings.properties ||  ['title', 'author', 'dateFinished'];
 
 		response.forEach(async (book) => {
-			const fullPath = normalizePath(path.join(this.settings.directory, book.filename + ".md"));
+			const fullPath = normalizePath(
+				path.join(this.settings.directory, book.filename + ".md")
+			);
 
-			let oldFrontmatter: FrontMatterCache | undefined;
+			let oldFrontmatter: Record<string, any> = {};
 
 			if (await this.app.vault.adapter.exists(fullPath)) {
-				oldFrontmatter =
+				const cache =
 					this.app.metadataCache.getCache(fullPath)?.frontmatter;
+				if (cache) {
+					oldFrontmatter = { ...cache };
+				}
 			}
-			
 
 			//@ts-ignore
 			await this.app.vault.adapter.write(
@@ -102,26 +100,29 @@ export default class MyPlugin extends Plugin {
 			// else {
 			// 	oldFrontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
 			// }
-			log("gagekke")
 
 			const file = this.app.vault.getFileByPath(fullPath) as TFile;
 
-			log(file)
-
 			this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-				this.settings.properties.forEach((prop) => {
+				this.settings.properties.forEach(async (prop) => {
 					frontmatter[prop] = book[prop];
+					delete oldFrontmatter[prop];
 				});
+				if (oldFrontmatter !== undefined) {
+					Object.entries(oldFrontmatter).forEach(([key, value]) => {
+						frontmatter[key] = value;
+					});
+				}
 			});
 		});
 	}
 
 	renderContent(book: NewBook): string {
-		log("GGGGG")
-		var output = Mustache.render(this.settings.templateContent, book) as string;
-		log("ERSE")
-		console.log(output);
+		var output = Mustache.render(
+			this.settings.templateContent,
+			book
+		) as string;
 
-		return output;
+		return he.decode(output);
 	}
 }
