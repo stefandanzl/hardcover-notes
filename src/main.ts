@@ -83,36 +83,52 @@ export default class MyPlugin extends Plugin {
 			);
 
 			let oldFrontmatter: Record<string, any> = {};
+			let oldContent: string = "";
+			let file: TFile;
 
-			if (await this.app.vault.adapter.exists(fullPath)) {
-				const cache =
-					this.app.metadataCache.getCache(fullPath)?.frontmatter;
-				if (cache) {
-					oldFrontmatter = { ...cache };
+			const fileDidExist = await this.app.vault.adapter.exists(fullPath);
+			// Check if file already exists
+			if (fileDidExist) {
+				file = this.app.vault.getFileByPath(fullPath) as TFile;
+
+				// Get old content and frontmatter if file exists
+				if (!this.settings.overwriteContent) {
+					oldContent = await this.app.vault.read(file);
+				}
+
+				if (!this.settings.overwriteFrontmatter) {
+					const cache =
+						this.app.metadataCache.getCache(fullPath)?.frontmatter;
+					if (cache) {
+						oldFrontmatter = { ...cache };
+					}
 				}
 			}
 
-			//@ts-ignore
-			await this.app.vault.adapter.write(
-				fullPath,
-				this.renderContent(book)
-			);
-			// else {
-			// 	oldFrontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
-			// }
+			// Create or update file
+			if (!fileDidExist || this.settings.overwriteContent) {
+				await this.app.vault.adapter.write(
+					fullPath,
+					this.renderContent(book)
+				);
+				file = this.app.vault.getFileByPath(fullPath) as TFile;
+			}
 
-			const file = this.app.vault.getFileByPath(fullPath) as TFile;
-
+			// @ts-ignore
 			this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-				this.settings.properties.forEach(async (prop) => {
-					frontmatter[prop] = book[prop];
-					delete oldFrontmatter[prop];
-				});
-				if (oldFrontmatter !== undefined) {
-					Object.entries(oldFrontmatter).forEach(([key, value]) => {
-						frontmatter[key] = value;
+				// Handle properties from propertySet that are enabled
+				Object.entries(this.settings.propertySet)
+					.filter(([_, alias]) => alias != "")
+					.forEach(([prop, alias]) => {
+						// @ts-ignore
+						frontmatter[alias] = book[prop];
+						delete oldFrontmatter[alias];
 					});
-				}
+
+				// Add remaining old properties
+				Object.entries(oldFrontmatter).forEach(([key, value]) => {
+					frontmatter[key] = value;
+				});
 			});
 		});
 	}

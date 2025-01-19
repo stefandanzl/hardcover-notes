@@ -1,6 +1,6 @@
-import {} from "./const"
-import MyPlugin from "main"; 
-import { PluginSettingTab, Setting, App } from "obsidian";
+import { DEFAULT_DIRECTORY, DEFAULT_PROPERTYSET, NewBook, PropertySettings } from "./const";
+import MyPlugin from "main";
+import { PluginSettingTab, Setting, App, TextComponent } from "obsidian";
 
 export class SampleSettingTab extends PluginSettingTab {
 	plugin: MyPlugin;
@@ -11,23 +11,110 @@ export class SampleSettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
-		const {containerEl} = this;
+		const { containerEl } = this;
 
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Auth Bearer')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your Hardcover API Key')
-				.setValue(this.plugin.settings.authBearer)
-				.onChange(async (value: string) => {
-					if (!value.startsWith("Bearer ")){
-						value = "Bearer "+value;
-					}
-					this.plugin.settings.authBearer = value;
+			.setName("Auth Bearer")
+			.setDesc("It's a secret")
+			.addText((text) =>
+				text
+					.setPlaceholder("Enter your Hardcover API Key")
+					.setValue(this.plugin.settings.authBearer)
+					.onChange(async (value: string) => {
+						if (!value.startsWith("Bearer ")) {
+							value = "Bearer " + value;
+						}
+						this.plugin.settings.authBearer = value;
+						await this.plugin.saveSettings();
+						this.plugin.setClient();
+					})
+			);
+
+			new Setting(containerEl)
+			.setName("Folder for Book Notes")
+			.setDesc("If left empty defaults to 'Hardcover/'")
+			.addText((text) =>
+				text
+					.setPlaceholder("Hardcover")
+					.setValue(this.plugin.settings.directory)
+					.onChange(async (value: string) => {
+						if (value === ""){
+							value = DEFAULT_DIRECTORY;
+						}
+						this.plugin.settings.directory = value;
+						await this.plugin.saveSettings();
+						this.plugin.setClient();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Overwrite Frontmatter")
+			.setDesc("If disabled not requested property fields will persist.")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.overwriteFrontmatter)
+					.onChange(async (value) => {
+						this.plugin.settings.overwriteFrontmatter = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Overwrite Content")
+			// .setDesc("Enable Synchronization on modification")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.overwriteContent)
+					.onChange(async (value) => {
+						this.plugin.settings.overwriteContent = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		const textComponents: TextComponent[] = [];
+
+		Object.entries(this.plugin.settings.propertySet).forEach(
+			([prop, alias]) => {
+				// // @ts-ignore
+				// frontmatter[setting.alias] = book[prop];
+				// delete oldFrontmatter[setting.alias];
+
+				new Setting(containerEl)
+					.setName(prop)
+					// .setDesc('It\'s a secret')
+					.addText((text) => {
+						text.setPlaceholder(prop).setValue(alias);
+
+						textComponents.push(text);
+						text.onChange(async (value: string) => {
+							//@ts-ignore
+							this.plugin.settings.propertySet[prop] = value;
+							await this.plugin.saveSettings();
+						});
+					});
+			}
+		);
+
+		new Setting(containerEl)
+			.setName("Reset Frontmatter Properties")
+			.setDesc("Set to default values")
+			.addButton((button) =>
+				button.onClick(async () => {
+					this.plugin.settings.propertySet = {
+						...DEFAULT_PROPERTYSET,
+					};
 					await this.plugin.saveSettings();
-                    this.plugin.setClient()
-				}));
+					// Update all text components with new values
+					textComponents.forEach((textComponent, index) => {
+						const prop = Object.keys(DEFAULT_PROPERTYSET)[index];
+						textComponent.setValue(
+							DEFAULT_PROPERTYSET[prop as keyof PropertySettings]
+						);
+					});
+
+				})
+			);
 	}
 }
