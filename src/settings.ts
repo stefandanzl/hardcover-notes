@@ -1,4 +1,9 @@
-import { DEFAULT_DIRECTORY, DEFAULT_PROPERTYSET, NewBook, PropertySettings } from "./const";
+import {
+	DEFAULT_DIRECTORY,
+	DEFAULT_PROPERTYSET,
+	NewBook,
+	PropertySettings,
+} from "./const";
 import MyPlugin from "main";
 import { PluginSettingTab, Setting, App, TextComponent } from "obsidian";
 
@@ -32,7 +37,7 @@ export class SampleSettingTab extends PluginSettingTab {
 					})
 			);
 
-			new Setting(containerEl)
+		new Setting(containerEl)
 			.setName("Folder for Book Notes")
 			.setDesc("If left empty defaults to 'Hardcover/'")
 			.addText((text) =>
@@ -40,7 +45,7 @@ export class SampleSettingTab extends PluginSettingTab {
 					.setPlaceholder("Hardcover")
 					.setValue(this.plugin.settings.directory)
 					.onChange(async (value: string) => {
-						if (value === ""){
+						if (value === "") {
 							value = DEFAULT_DIRECTORY;
 						}
 						this.plugin.settings.directory = value;
@@ -80,20 +85,32 @@ export class SampleSettingTab extends PluginSettingTab {
 				// // @ts-ignore
 				// frontmatter[setting.alias] = book[prop];
 				// delete oldFrontmatter[setting.alias];
+				let thisText: TextComponent;
+				let thisBool: boolean = true;
 
 				new Setting(containerEl)
 					.setName(prop)
 					// .setDesc('It\'s a secret')
 					.addText((text) => {
 						text.setPlaceholder(prop).setValue(alias);
-
+						thisText = text;
 						textComponents.push(text);
 						text.onChange(async (value: string) => {
 							//@ts-ignore
 							this.plugin.settings.propertySet[prop] = value;
 							await this.plugin.saveSettings();
 						});
-					});
+					})
+					.addExtraButton((button) => {
+						button.onClick(async () =>{
+							thisBool = !thisBool;
+
+							const newValue = thisBool ? DEFAULT_PROPERTYSET[prop as keyof PropertySettings] :  "" ;
+							thisText.setValue(newValue);
+							this.plugin.settings.propertySet[prop as keyof PropertySettings] = newValue;
+							await this.plugin.saveSettings();
+						} );
+					})
 			}
 		);
 
@@ -113,8 +130,33 @@ export class SampleSettingTab extends PluginSettingTab {
 							DEFAULT_PROPERTYSET[prop as keyof PropertySettings]
 						);
 					});
-
 				})
+			);
+
+		new Setting(containerEl)
+			.setName("Edit custom filter rules for shown books")
+			.setDesc("")
+			.addTextArea((text) =>
+				text
+					.setValue(this.plugin.settings.filter)
+					.onChange(async (value) => {
+						this.plugin.settings.filter = value;
+						await this.plugin.saveSettings();
+						this.plugin.setClient();
+					})
+			);
+
+
+			new Setting(containerEl)
+			.setName("Edit your book note template:")
+			.setDesc("")
+			.addTextArea((text) =>
+				text
+					.setValue(this.plugin.settings.templateContent)
+					.onChange(async (value) => {
+						this.plugin.settings.templateContent = value;
+						await this.plugin.saveSettings();
+					})
 			);
 	}
 }

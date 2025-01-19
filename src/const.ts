@@ -2,11 +2,11 @@ export interface NewBook {
 	author: string;
 	bookStatus: string;
 	bookStatusId: number;
-	dateFinished: string;
-	dateStarted: string;
-	description: string;
+	dateFinished: string | null;
+	dateStarted: string | null;
+	description: string | null;
 	filename: string;
-	imageUrl: string;
+	imageurl: string | null;
 	releaseYear: number;
 	subtitle: string;
 	title: string;
@@ -62,6 +62,7 @@ export interface User {
 }
 
 export const DEFAULT_TEMPLATE: string = `
+![cover|150]({{imageurl}})
 # {{title}}
 
 ## {{subtitle}}
@@ -168,6 +169,7 @@ export const DEFAULT_PROPERTYSET = {
 
  
 export interface MyPluginSettings {
+    filter: string;
 	overwriteFrontmatter: boolean;
 	authBearer: string;
 	apiUrl: string;
@@ -187,4 +189,6 @@ export const DEFAULT_SETTINGS: MyPluginSettings = {
     propertySet: DEFAULT_PROPERTYSET,
     overwriteContent: true,
     overwriteFrontmatter: true,
+    filter: `user_book_reads: {finished_at: {_gt: "2022-01-01", _lt: "2025-12-31"}}, 
+        #user_book_status: {id: {_eq: 3}}`
 };

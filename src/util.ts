@@ -5,18 +5,18 @@ const he = require("he");
 export function processUserBooks(data: { me: User[] }) {
 	const user = data.me[0];
 	const processedBooks = user.user_books.map((userBook) => ({
-		author: userBook.book.contributions[0].author.name,
-		bookStatus: userBook.user_book_status.status,
-		bookStatusId: userBook.user_book_status.id,
-		dateFinished: userBook.user_book_reads[0].finished_at,
-		dateStarted: userBook.user_book_reads[0].started_at,
-		description: userBook.book.description,
-		filename: sanitizeTitle(he.decode(userBook.book.title)),
-		imageUrl: userBook.book.image.url,
-		releaseYear: userBook.book.release_year,
-		subtitle: userBook.book.subtitle,
-		title: userBook.book.title,
-	}));
+        author: userBook.book.contributions?.[0]?.author?.name ?? "Unknown Author",
+        bookStatus: userBook.user_book_status?.status ?? "Unknown Status",
+        bookStatusId: userBook.user_book_status?.id ?? 0,
+        dateFinished: userBook.user_book_reads?.[0]?.finished_at ?? null,
+        dateStarted: userBook.user_book_reads?.[0]?.started_at ?? null,
+        description: userBook.book.description ?? "",
+        filename: sanitizeTitle(userBook.book.title ?? "Untitled"),
+        imageurl: userBook.book.image?.url ?? "",
+        releaseYear: userBook.book.release_year ?? 0,
+        subtitle: userBook.book.subtitle ?? "",
+        title: userBook.book.title ?? "Untitled",
+    }));
 
 	return processedBooks;
 }

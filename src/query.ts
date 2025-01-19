@@ -22,8 +22,7 @@ export class Client extends GraphQLClient {
     username
     user_books(
       where: {
-        user_book_reads: {finished_at: {_gt: "2022-01-01", _lt: "2025-12-31"}}, 
-        #user_book_status: {id: {_eq: 3}}
+      ${this.plugin.settings.filter}
             }
     ) {
       user_book_status {
