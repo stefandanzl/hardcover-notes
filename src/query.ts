@@ -1,6 +1,7 @@
 import { GraphQLClient } from 'graphql-request'
 import MyPlugin from 'main'
 import { User } from 'const';
+import { processUserBooks } from './util';
 
 
 export class Client extends GraphQLClient{
@@ -58,31 +59,10 @@ async fetchUserBooks() {
     `
     
     const response = await this.plugin.client.request(query) as {me: User[]}
-    return this.processUserBooks(response);
+    return processUserBooks(response);
 }
 
-// Function to parse and process the data
-processUserBooks(data: { me: User[] }) {
 
-    const user = data.me[0];
-    const processedBooks = user.user_books.map(userBook => ({
-        title: userBook.book.title,
-        author: userBook.book.contributions[0].author.name,
-        readDate: {
-            start: userBook.user_book_reads[0].started_at,
-            end: userBook.user_book_reads[0].finished_at
-        },
-        cover: userBook.book.image.url,
-        description: userBook.book.description,
-        status: userBook.user_book_status.status
-    }));
-
-    return {
-        username: user.username,
-        books: processedBooks
-    };
-
-}
 
 
 }

@@ -2,17 +2,27 @@
 
 version: '3'
 
-dotenv: ['.env']
 vars:
-  GREETING: Hello, World!
+  #DIR_PLUGIN: C:\PROJECTS\Obsidian\dev7\.obsidian\plugins\booksidian-plugin
+
+dotenv: ['.env']
 
 tasks:
   default:
     cmds:
       - task: build
+      - task: copy
+  copy:
+    cmds:
+      - xcopy "{{.USER_WORKING_DIR}}\main.js" "{{.DIR_PLUGIN}}\main.js" /Y
   build:
     cmds:
       - npm run build
-  test:
+  patch:
     cmds:
-      - jest
+      - npm version patch
+  git:
+    cmds:
+      - git add .
+      - git commit -m "task"
+      - git push
