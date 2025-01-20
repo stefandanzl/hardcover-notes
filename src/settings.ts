@@ -1,7 +1,6 @@
 import {
 	DEFAULT_DIRECTORY,
 	DEFAULT_PROPERTYSET,
-	NewBook,
 	PropertySettings,
 } from "./const";
 import MyPlugin from "main";
@@ -86,7 +85,7 @@ export class SampleSettingTab extends PluginSettingTab {
 				// frontmatter[setting.alias] = book[prop];
 				// delete oldFrontmatter[setting.alias];
 				let thisText: TextComponent;
-				let thisBool: boolean = true;
+				let thisBool = true;
 
 				new Setting(containerEl)
 					.setName(prop)

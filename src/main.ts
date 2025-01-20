@@ -1,40 +1,17 @@
-import {
-	App,
-	Editor,
-	MarkdownView,
-	Modal,
-	normalizePath,
-	Notice,
-	Plugin,
-	PluginSettingTab,
-	Setting,
-	TFile,
-} from "obsidian";
-import {
-	parseFrontMatterEntry,
-	parseYaml,
-	getFrontMatterInfo,
-	FrontMatterInfo,
-	FrontMatterCache,
-} from "obsidian";
-import { SampleSettingTab } from "settings";
+/* eslint-disable @typescript-eslint/no-var-requires */
+import { normalizePath, Plugin, TFile } from "obsidian";
 // Remember to rename these classes and interfaces!
 import {
-	BookKey,
 	DEFAULT_SETTINGS,
 	MyPluginSettings,
 	NewBook,
 	PropertySettings,
-	User,
 } from "const";
 import { launcher } from "startup";
-import { GraphQLClient } from "graphql-request";
 import { Client } from "query";
-import { Book } from "const";
-import { resolve } from "path";
 import * as path from "path";
+import { diffMerger } from "./util";
 // import * as Mustache from "mustache";
-import { log } from "./util";
 const Mustache = require("mustache");
 const he = require("he");
 
@@ -83,9 +60,10 @@ export default class MyPlugin extends Plugin {
 				path.join(this.settings.directory, book.filename + ".md")
 			);
 
-			let oldFrontmatter: Record<string, any> = {};
-			let oldContent: string = "";
+			let oldFrontmatter: Record<string, unknown> = {};
+			let oldContent = "";
 			let file: TFile;
+			let newContent = this.renderContent(book);
 
 			const fileDidExist = await this.app.vault.adapter.exists(fullPath);
 			// Check if file already exists
@@ -95,6 +73,8 @@ export default class MyPlugin extends Plugin {
 				// Get old content and frontmatter if file exists
 				if (!this.settings.overwriteContent) {
 					oldContent = await this.app.vault.read(file);
+
+					newContent = diffMerger(oldContent, newContent)
 				}
 
 				if (!this.settings.overwriteFrontmatter) {
@@ -108,10 +88,7 @@ export default class MyPlugin extends Plugin {
 
 			// Create or update file
 			if (!fileDidExist || this.settings.overwriteContent) {
-				await this.app.vault.adapter.write(
-					fullPath,
-					this.renderContent(book)
-				);
+				await this.app.vault.adapter.write(fullPath, newContent);
 				file = this.app.vault.getFileByPath(fullPath) as TFile;
 			}
 
@@ -121,18 +98,15 @@ export default class MyPlugin extends Plugin {
 				Object.entries(this.settings.propertySet)
 					.filter(([_, alias]) => alias != "")
 					.forEach(([prop, alias]) => {
-						
-
-						// This 
-						const newVal = book[prop as keyof PropertySettings]
-						if (newVal != null && newVal != "" ) {
+						// This
+						const newVal = book[prop as keyof PropertySettings];
+						if (newVal != null && newVal != "") {
 							delete oldFrontmatter[alias];
-						 } else {
-							console.log(book.title, alias , "   " ,newVal)
-						 }
-						
+						} else {
+							console.log(book.title, alias, "   ", newVal);
+						}
+
 						frontmatter[alias] = newVal;
-						
 					});
 
 				// Add remaining old properties
@@ -144,7 +118,7 @@ export default class MyPlugin extends Plugin {
 	}
 
 	renderContent(book: NewBook): string {
-		var output = Mustache.render(
+		const output = Mustache.render(
 			this.settings.templateContent,
 			book
 		) as string;

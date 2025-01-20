@@ -1,5 +1,5 @@
 export interface NewBook {
-	author: string;
+	author: string[];
 	bookStatus: string;
 	bookStatusId: number;
 	dateFinished: string | null;
@@ -61,7 +61,7 @@ export interface User {
 	user_books: UserBook[];
 }
 
-export const DEFAULT_TEMPLATE: string = `
+export const DEFAULT_TEMPLATE = `
 ![cover|150]({{imageurl}})
 # {{title}}
 
