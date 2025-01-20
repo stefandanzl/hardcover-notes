@@ -24,6 +24,7 @@ import {
 	DEFAULT_SETTINGS,
 	MyPluginSettings,
 	NewBook,
+	PropertySettings,
 	User,
 } from "const";
 import { launcher } from "startup";
@@ -120,9 +121,18 @@ export default class MyPlugin extends Plugin {
 				Object.entries(this.settings.propertySet)
 					.filter(([_, alias]) => alias != "")
 					.forEach(([prop, alias]) => {
-						// @ts-ignore
-						frontmatter[alias] = book[prop];
-						delete oldFrontmatter[alias];
+						
+
+						// This 
+						const newVal = book[prop as keyof PropertySettings]
+						if (newVal != null && newVal != "" ) {
+							delete oldFrontmatter[alias];
+						 } else {
+							console.log(book.title, alias , "   " ,newVal)
+						 }
+						
+						frontmatter[alias] = newVal;
+						
 					});
 
 				// Add remaining old properties
